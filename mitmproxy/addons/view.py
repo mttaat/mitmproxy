@@ -22,6 +22,9 @@ from mitmproxy import connections
 from mitmproxy import ctx
 from mitmproxy import io
 from mitmproxy import http  # noqa
+    # mttaat...
+from mitmproxy import websocket
+from mitmproxy import tcp
 
 # The underlying sorted list implementation expects the sort key to be stable
 # for the lifetime of the object. However, if we sort by size, for instance,
@@ -38,7 +41,9 @@ class _OrderKey:
     def __init__(self, view):
         self.view = view
 
-    def generate(self, f: http.HTTPFlow) -> typing.Any:  # pragma: no cover
+    # mttaat...
+    #def generate(self, f: http.HTTPFlow) -> typing.Any:  # pragma: no cover
+    def generate(self, f) -> typing.Any: # pragma: no cover
         pass
 
     def refresh(self, f):
@@ -68,32 +73,41 @@ class _OrderKey:
 
 
 class OrderRequestStart(_OrderKey):
-    def generate(self, f: http.HTTPFlow) -> int:
+    # mttaat...
+    #def generate(self, f: http.HTTPFlow) -> int:
+    def generate(self, f) -> int:
         return f.request.timestamp_start or 0
 
 
 class OrderRequestMethod(_OrderKey):
-    def generate(self, f: http.HTTPFlow) -> str:
+    # mttaat...
+    #def generate(self, f: http.HTTPFlow) -> str:
+    def generate(self, f) -> str:
         return f.request.method
 
 
 class OrderRequestURL(_OrderKey):
-    def generate(self, f: http.HTTPFlow) -> str:
+    # mttaat...
+    #def generate(self, f: http.HTTPFlow) -> str:
+    def generate(self, f) -> str:
         return f.request.url
 
 
 class OrderKeySize(_OrderKey):
-    def generate(self, f: http.HTTPFlow) -> int:
+    # mttaat...
+    #def generate(self, f: http.HTTPFlow) -> int:
+    def generate(self, f) -> int:
         s = 0
+#        f = http.HTTPFlow(f)
         if f.request.raw_content:
             s += len(f.request.raw_content)
         if f.response and f.response.raw_content:
             s += len(f.response.raw_content)
         return s
 
-
-matchall = flowfilter.parse(".")
-
+#mttaat 02.08.2019
+#matchall = flowfilter.parse(".")
+matchall = flowfilter.parse("~http | ~tcp | ~websocket")
 
 orders = [
     ("t", "time"),
@@ -431,12 +445,16 @@ class View(collections.abc.Sequence):
     @command.command("view.flows.create")
     def create(self, method: str, url: str) -> None:
         try:
+    # mttaat...
             req = http.HTTPRequest.make(method.upper(), url)
+	    # req = websocket.WebSocketMessage()
         except ValueError as e:
             raise exceptions.CommandError("Invalid URL: %s" % e)
         c = connections.ClientConnection.make_dummy(("", 0))
         s = connections.ServerConnection.make_dummy((req.host, req.port))
+    # mttaat...
         f = http.HTTPFlow(c, s)
+	#f = websocket.WebSocketFlow()
         f.request = req
         f.request.headers["Host"] = req.host
         self.add([f])
@@ -548,6 +566,37 @@ class View(collections.abc.Sequence):
 
     def kill(self, f):
         self.update([f])
+
+#mttaat 02.08.2019
+# TCP
+    def tcp_start(self, f):
+        self.add([f])
+
+    def tcp_message(self, f):
+        self.update([f])
+
+    def tcp_error(self, f):
+        self.update([f])
+
+    def tcp_end(self, f):
+        self.update([f])
+
+# WebSockets
+    def websocket_start(self, f):
+        self.add([f])
+
+    def websocket_message(self, f):
+        self.update([f])
+
+    def websocket_error(self, f):
+        self.update([f])
+
+    def websocket_end(self, f):
+        self.update([f])
+
+    def websocket_end(self, f):
+        self.update([f])
+
 
     def update(self, flows: typing.Sequence[mitmproxy.flow.Flow]) -> None:
         """
