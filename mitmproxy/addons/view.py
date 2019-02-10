@@ -74,15 +74,29 @@ class _OrderKey:
 
 class OrderRequestStart(_OrderKey):
     # mttaat...
+    # refactor to case statement
     #def generate(self, f: http.HTTPFlow) -> int:
     def generate(self, f) -> int:
-        return f.request.timestamp_start or 0
+        if isinstance(f, http.HTTPFlow):
+            result = f.request.timestamp_start
+        elif isinstance(f, websocket.WebSocketFlow):
+            if len(f.messages) > 0:
+                result = f.messages[0].timestamp
+            else:
+                result = 0
+        elif isinstance(f, tcp.TCPFlow):
+            result = 0
+        return result or 0
 
 
 class OrderRequestMethod(_OrderKey):
     # mttaat...
     #def generate(self, f: http.HTTPFlow) -> str:
     def generate(self, f) -> str:
+        if isinstance(f, http.HTTPFlow):
+            result = f.request.method
+        elif isinstance(f, websocket.WebSocketFlow):
+            result = f.messages[0].type
         return f.request.method
 
 
@@ -98,7 +112,6 @@ class OrderKeySize(_OrderKey):
     #def generate(self, f: http.HTTPFlow) -> int:
     def generate(self, f) -> int:
         s = 0
-#        f = http.HTTPFlow(f)
         if f.request.raw_content:
             s += len(f.request.raw_content)
         if f.response and f.response.raw_content:
@@ -107,7 +120,8 @@ class OrderKeySize(_OrderKey):
 
 #mttaat 02.08.2019
 #matchall = flowfilter.parse(".")
-matchall = flowfilter.parse("~http | ~tcp | ~websocket")
+matchall = flowfilter.parse("~websocket")
+#matchall = flowfilter.parse("~http | ~tcp | ~websocket")
 
 orders = [
     ("t", "time"),
