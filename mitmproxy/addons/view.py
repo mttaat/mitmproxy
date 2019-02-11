@@ -75,7 +75,6 @@ class _OrderKey:
 class OrderRequestStart(_OrderKey):
     # mttaat...
     # refactor to case statement
-    #def generate(self, f: http.HTTPFlow) -> int:
     def generate(self, f) -> int:
         if isinstance(f, http.HTTPFlow):
             result = f.request.timestamp_start

@@ -1,9 +1,14 @@
 import platform
+import time
 import typing
 from functools import lru_cache
 
 import urwid
 import urwid.util
+
+from mitmproxy import http
+from mitmproxy import websocket
+from mitmproxy import tcp
 
 from mitmproxy.utils import human
 
@@ -194,6 +199,17 @@ def raw_format_flow(f):
 
 
 def format_flow(f, focus, extended=False, hostheader=False, max_url_len=False):
+#mttaat
+    result = None
+    if isinstance(f, http.HTTPFlow):
+        result = format_http_flow(f, focus, extended, hostheader, max_url_len)
+    elif isinstance(f, websocket.WebSocketFlow):
+        result = format_websocket_flow(f, focus, extended, hostheader, max_url_len)
+    elif isinstance(f, tcp, TCPFlow):
+        result = format_tcpflow_flow(f, focus, extended, hostheader, max_url_len)
+    return result
+
+def format_http_flow(f, focus, extended=False, hostheader=False, max_url_len=False):
     acked = False
     if f.reply and f.reply.state == "committed":
         acked = True
@@ -213,12 +229,11 @@ def format_flow(f, focus, extended=False, hostheader=False, max_url_len=False):
         marked=f.marked,
     )
     if f.response:
+        contentdesc = "[no content]"
         if f.response.raw_content:
             contentdesc = human.pretty_size(len(f.response.raw_content))
         elif f.response.raw_content is None:
             contentdesc = "[content missing]"
-        else:
-            contentdesc = "[no content]"
         duration = 0
         if f.response.timestamp_end and f.request.timestamp_start:
             duration = f.response.timestamp_end - f.request.timestamp_start
@@ -239,3 +254,60 @@ def format_flow(f, focus, extended=False, hostheader=False, max_url_len=False):
             d["resp_ctype"] = ""
 
     return raw_format_flow(tuple(sorted(d.items())))
+
+
+def format_tcp_flow(f, focus, extended=False, hostheader=False, max_url_len=False):
+    return None
+
+def format_websocket_flow(f, focus, extended=False, hostheader=False, max_url_len=False):
+    acked=True
+    contentdesc = "[no content]"
+    if len(f.messages) == 0:
+        d = dict(focus=focus,
+            extended=extended,
+            max_url_len=max_url_len,
+            acked=acked,
+            intercepted=False,
+            req_timestamp=int(time.time()),
+            req_method="WS",
+            req_is_replay=False,
+            resp_is_replay=False,
+            req_url="websockets.org/echo.html",
+#            req_url=f.server_conn.address,
+            req_http_version="HTTP/1.1",
+            resp_clen=contentdesc,
+            resp_ctype="",
+            resp_code=2,
+            resp_reason="",
+            roundtrip=False,
+            err_msg="",
+#            err_msg=f.error.msg,
+            marked=False,
+        )
+    else:
+        if f.messages[0].content:
+            contentdesc = human.pretty_size(len(f.messages[0].content))
+        d = dict(focus=focus,
+            extended=extended,
+            max_url_len=max_url_len,
+            acked=acked,
+            intercepted=False,
+            req_timestamp=f.messages[0].timestamp or int(time.time()),
+            req_is_replay=False,
+            resp_is_replay=False,
+            req_method="WS",
+            req_url="websockets.org/echo.html",
+#            req_url=f.server_conn.address,
+            req_http_version="HTTP/1.1",
+            resp_clen=contentdesc,
+            resp_code=2,
+            resp_ctype="",
+            resp_reason="",
+            roundtrip=False,
+            err_msg="",
+#            err_msg=f.error.msg,
+            marked=False,
+        )
+
+    return raw_format_flow(tuple(sorted(d.items())))
+
