@@ -260,26 +260,27 @@ def format_tcp_flow(f, focus, extended=False, hostheader=False, max_url_len=Fals
     return None
 
 def format_websocket_flow(f, focus, extended=False, hostheader=False, max_url_len=False):
-    acked=True
+    acked=False
     contentdesc = "[no content]"
     if len(f.messages) == 0:
+        contentdesc = "[ws handshake]"
         d = dict(focus=focus,
             extended=extended,
             max_url_len=max_url_len,
             acked=acked,
             intercepted=False,
-            req_timestamp=int(time.time()),
+            req_timestamp=f.handshake_flow.request.timestamp_start,
             req_method="WS",
             req_is_replay=False,
             resp_is_replay=False,
-            req_url="websockets.org/echo.html",
-#            req_url=f.server_conn.address,
-            req_http_version="HTTP/1.1",
+            req_url=human.format_address(f.server_conn.address),
+            #req_http_version=f.client_protocol,
+            req_http_version="WS",
             resp_clen=contentdesc,
             resp_ctype="",
             resp_code=2,
             resp_reason="",
-            roundtrip=False,
+            roundtrip=human.pretty_duration(1),
             err_msg="",
 #            err_msg=f.error.msg,
             marked=False,
@@ -296,14 +297,14 @@ def format_websocket_flow(f, focus, extended=False, hostheader=False, max_url_le
             req_is_replay=False,
             resp_is_replay=False,
             req_method="WS",
-            req_url="websockets.org/echo.html",
-#            req_url=f.server_conn.address,
-            req_http_version="HTTP/1.1",
+            req_url=human.format_address(f.server_conn.address),
+            #req_http_version=f.client_protocol,
+            req_http_version="WS",
             resp_clen=contentdesc,
             resp_code=2,
             resp_ctype="",
             resp_reason="",
-            roundtrip=False,
+            roundtrip=human.pretty_duration(1),
             err_msg="",
 #            err_msg=f.error.msg,
             marked=False,

@@ -82,7 +82,7 @@ class OrderRequestStart(_OrderKey):
             if len(f.messages) > 0:
                 result = f.messages[0].timestamp
             else:
-                result = 0
+                result = f.handshake_flow.request.timestamp_start
         elif isinstance(f, tcp.TCPFlow):
             result = 0
         return result or 0
@@ -90,7 +90,6 @@ class OrderRequestStart(_OrderKey):
 
 class OrderRequestMethod(_OrderKey):
     # mttaat...
-    #def generate(self, f: http.HTTPFlow) -> str:
     def generate(self, f) -> str:
         if isinstance(f, http.HTTPFlow):
             result = f.request.method
@@ -101,14 +100,12 @@ class OrderRequestMethod(_OrderKey):
 
 class OrderRequestURL(_OrderKey):
     # mttaat...
-    #def generate(self, f: http.HTTPFlow) -> str:
     def generate(self, f) -> str:
         return f.request.url
 
 
 class OrderKeySize(_OrderKey):
     # mttaat...
-    #def generate(self, f: http.HTTPFlow) -> int:
     def generate(self, f) -> int:
         s = 0
         if f.request.raw_content:
