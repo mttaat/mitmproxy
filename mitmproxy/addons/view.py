@@ -116,8 +116,8 @@ class OrderKeySize(_OrderKey):
 
 #mttaat 02.08.2019
 #matchall = flowfilter.parse(".")
-matchall = flowfilter.parse("~websocket")
-#matchall = flowfilter.parse("~http | ~tcp | ~websocket")
+#matchall = flowfilter.parse("~websocket")
+matchall = flowfilter.parse("~http | ~websocket")
 
 orders = [
     ("t", "time"),

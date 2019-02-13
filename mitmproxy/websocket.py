@@ -64,6 +64,9 @@ class WebSocketFlow(flow.Flow):
     def __init__(self, client_conn, server_conn, handshake_flow, live=None):
         super().__init__("websocket", client_conn, server_conn, live)
 
+        self.request = None
+        self.response = None
+
         self.messages: List[WebSocketMessage] = []
         """A list containing all WebSocketMessage's."""
         self.close_sender = 'client'

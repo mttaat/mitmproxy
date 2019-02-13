@@ -262,6 +262,7 @@ def format_tcp_flow(f, focus, extended=False, hostheader=False, max_url_len=Fals
 def format_websocket_flow(f, focus, extended=False, hostheader=False, max_url_len=False):
     acked=False
     contentdesc = "[no content]"
+
     if len(f.messages) == 0:
         contentdesc = "[ws handshake]"
         d = dict(focus=focus,
@@ -287,7 +288,8 @@ def format_websocket_flow(f, focus, extended=False, hostheader=False, max_url_le
         )
     else:
         if f.messages[0].content:
-            contentdesc = human.pretty_size(len(f.messages[0].content))
+#            contentdesc = human.pretty_size(len(f.messages[0].content))
+            contentdesc = f.messages[0].content
         d = dict(focus=focus,
             extended=extended,
             max_url_len=max_url_len,

@@ -1,9 +1,6 @@
 import urwid
 
 from mitmproxy import http
-from mitmproxy import websocket
-from mitmproxy import tcp
-
 from mitmproxy.tools.console import common, searchable
 from mitmproxy.utils import human
 from mitmproxy.utils import strutils

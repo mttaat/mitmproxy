@@ -8,6 +8,9 @@ import urwid
 from mitmproxy import contentviews
 from mitmproxy import ctx
 from mitmproxy import http
+from mitmproxy import websocket
+from mitmproxy import tcp
+
 from mitmproxy.tools.console import common
 from mitmproxy.tools.console import layoutwidget
 from mitmproxy.tools.console import flowdetailview
@@ -53,11 +56,20 @@ class FlowDetails(tabs.Tabs):
 
     def focus_changed(self):
         if self.master.view.focus.flow:
-            self.tabs = [
-                (self.tab_request, self.view_request),
-                (self.tab_response, self.view_response),
-                (self.tab_details, self.view_details),
-            ]
+            if isinstance(self.master.view.focus.flow, http.HTTPFlow):
+                self.tabs = [
+                    (self.tab_request, self.view_request),
+                    (self.tab_response, self.view_response),
+                    (self.tab_details, self.view_details),
+                ]
+            elif isinstance(self.master.view.focus.flow, websocket.WebSocketFlow):
+                self.tabs = [
+                    (self.tab_details, self.view_details),
+                ]
+            elif isinstance(self.master.view.focus.flow, tcp.TCPFlow):
+                self.tabs = [
+                    (self.tab_details, self.view_details),
+                ]
             self.show()
         else:
             self.master.window.pop()
